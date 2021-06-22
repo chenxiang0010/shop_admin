@@ -1,0 +1,13 @@
+<template>
+  <div>权限</div>
+</template>
+
+<script>
+export default {
+  name: 'Rights'
+}
+</script>
+
+<style lang='less' scoped>
+
+</style>
