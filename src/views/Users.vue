@@ -59,7 +59,7 @@
       title='添加用户'
       :visible.sync='addUserDialogVisible'
       width='50%'
-      @close='addDialogClose'>
+      @close='addUserDialogClose'>
       <el-form label-width='70px' :model='addForm' :rules='addFormRules' ref='addFormRef'>
         <el-form-item label='用户名' prop='username'>
           <el-input v-model='addForm.username' prefix-icon='el-icon-phone'></el-input>
@@ -83,7 +83,7 @@
     <el-dialog title='修改用户信息'
                :visible.sync='reviseUserDialogVisible'
                width='50%'
-               @close='reviseDialogClose'>
+               @close='reviseUserDialogClose'>
       <el-form label-width='70px' :model='queryUserInfo' :rules='addFormRules' ref='queryUserInfoRef'>
         <el-form-item label='用户名' prop='username'>
           <el-input v-model='queryUserInfo.username' prefix-icon='el-icon-phone' disabled></el-input>
@@ -192,10 +192,10 @@ export default {
       this.$message.success('更新用户状态成功')
     },
     //重置dialog
-    addDialogClose() {
+    addUserDialogClose() {
       this.$refs.addFormRef.resetFields()
     },
-    reviseDialogClose() {
+    reviseUserDialogClose() {
       this.$refs.queryUserInfoRef.resetFields()
     },
     //添加用户
