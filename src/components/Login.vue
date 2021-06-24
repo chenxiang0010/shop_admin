@@ -1,19 +1,19 @@
 <template>
-  <div class="login_container">
-    <div class="login_box">
-      <div class="avatar_box">
-        <img src="@/assets/logo.png" alt="">
+  <div class='login_container'>
+    <div class='login_box'>
+      <div class='avatar_box'>
+        <img src='@/assets/logo.png' alt='登录区域头像'>
       </div>
-      <el-form ref="loginRef" :rules="loginRules" :model="loginForm" label-width="70px" class="login_form">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="loginForm.username" prefix-icon="el-icon-phone"></el-input>
+      <el-form ref='loginRef' :rules='loginRules' :model='loginForm' label-width='70px' class='login_form'>
+        <el-form-item label='用户名' prop='username'>
+          <el-input v-model='loginForm.username' prefix-icon='el-icon-phone'></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="loginForm.password" prefix-icon="el-icon-s-goods" type="password"></el-input>
+        <el-form-item label='密码' prop='password'>
+          <el-input v-model='loginForm.password' prefix-icon='el-icon-s-goods' type='password'></el-input>
         </el-form-item>
-        <el-form-item class="buttons">
-          <el-button type="primary" @click="loginClick">登录</el-button>
-          <el-button type="danger" @click="resetClick">重置</el-button>
+        <el-form-item class='buttons'>
+          <el-button type='primary' @click='login'>登录</el-button>
+          <el-button type='danger' @click='resetLogin'>重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -23,58 +23,41 @@
 <script>
 export default {
   name: 'Login',
-  data () {
+  data() {
     return {
-      // 登录数据
+      //登录数据
       loginForm: {
         username: 'admin',
         password: '123456'
       },
+      //登录验证规则
       loginRules: {
         username: [
-          {
-            required: true,
-            message: '请输入用户名',
-            trigger: 'blur'
-          },
-          {
-            min: 3,
-            max: 11,
-            message: '请输入合法的用户名',
-            trigger: 'blur'
-          }
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, max: 11, message: '用户名长度应为3~11个字符', trigger: 'blur' }
         ],
         password: [
-          {
-            required: true,
-            message: '请输入密码',
-            trigger: 'blur'
-          },
-          {
-            min: 6,
-            max: 18,
-            message: '密码长度为6到18位',
-            trigger: 'blur'
-          }
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, max: 18, message: '密码长度应为6~18个字符', trigger: 'blur' }
         ]
       }
     }
   },
   methods: {
     // 登录按钮
-    loginClick () {
+    login() {
       this.$refs.loginRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('login', this.loginForm)
-        if (res.meta.status !== 200) return this.$message.error('登录失败')
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.$message.success('登录成功')
-        console.log(res)
+        //将token值保存
         window.sessionStorage.setItem('token', res.data.token)
         await this.$router.push('/home')
       })
     },
-    // 重置输入框
-    resetClick () {
+    //重置输入框
+    resetLogin() {
       this.$refs.loginRef.resetFields()
     }
   }

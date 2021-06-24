@@ -1,30 +1,30 @@
 <template>
-  <el-container class="home_container">
+  <el-container class='home_container'>
     <!--头部区-->
     <el-header>
       <div>
-        <img src="@/assets/logo.png" alt="">
+        <img src='@/assets/logo.png' alt='顶部logo'>
         <span>电商后台管理系统</span>
       </div>
-      <el-button type="info" @click="logout">退出</el-button>
+      <el-button type='info' @click='logout'>退出</el-button>
     </el-header>
     <!--页面主体区-->
     <el-container>
       <!--侧边栏-->
       <el-aside :width="isCollapse?'64px':'200px'">
-        <div class="toggle_button" @click="toggleCollapse"><i class="iconfont icon-toggle-verticle"></i></div>
-        <el-menu background-color="#323744" text-color="#fff" active-text-color="#2B7CDA" unique-opened
-                 :collapse="isCollapse" :collapse-transition="false" router :default-active="$route.path">
+        <div class='toggle_button' @click='toggleCollapse'><i class='iconfont icon-toggle-verticle'></i></div>
+        <el-menu background-color='#545c72' text-color='#fff' active-text-color='#2B7CDA' unique-opened
+                 :collapse='isCollapse' :collapse-transition='false' router :default-active='$route.path'>
           <!--一级菜单-->
-          <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id">
-            <template slot="title">
-              <i :class="iconObj[item.id]"></i>
+          <el-submenu :index="item.id+''" v-for='item in menuList' :key='item.id'>
+            <template slot='title'>
+              <i :class='iconObj[item.id]'></i>
               <span>{{ item.authName }}</span>
             </template>
             <!--二级菜单-->
-            <el-menu-item :index="'/'+subItem.path" v-for="subItem in item.children" :key="subItem.id">
-              <template slot="title">
-                <i class="el-icon-menu"></i>
+            <el-menu-item :index="'/'+subItem.path" v-for='subItem in item.children' :key='subItem.id'>
+              <template slot='title'>
+                <i class='el-icon-menu'></i>
                 <span>{{ subItem.authName }}</span>
               </template>
             </el-menu-item>
@@ -42,7 +42,7 @@
 <script>
 export default {
   name: 'Home',
-  data () {
+  data() {
     return {
       menuList: [],
       iconObj: {
@@ -55,24 +55,26 @@ export default {
       isCollapse: false
     }
   },
-  created () {
+  created() {
     this.getMenuList()
   },
   methods: {
-    logout () {
+    //退出登录
+    logout() {
       window.sessionStorage.clear()
       this.$router.push('/login')
       return this.$message.success('已退出登录')
-    }, // 退出登录
-    async getMenuList () {
+    },
+    //获取左侧菜单
+    async getMenuList() {
       const { data: res } = await this.$http.get('menus')
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.menuList = res.data
-      // console.log(res)
-    }, // 获取左侧菜单
-    toggleCollapse () {
+    },
+    //是否折叠左侧菜单
+    toggleCollapse() {
       this.isCollapse = !this.isCollapse
-    } // 是否折叠左侧菜单
+    }
   }
 }
 </script>
@@ -83,7 +85,7 @@ export default {
 }
 
 .el-header {
-  background-color: #373C41;
+  background-color: #a2c2b6;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -106,7 +108,7 @@ export default {
 }
 
 .el-aside {
-  background-color: #323744;
+  background-color: #545c72;
 
   .toggle_button {
     background-color: #4a5064;

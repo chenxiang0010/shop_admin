@@ -28,16 +28,17 @@
         <el-table-column label='状态'>
           <!--作用域插槽-->
           <template slot-scope='scope'>
-            <el-switch v-model='scope.row.mg_state' @change='userStateChanged(scope.row)'></el-switch>
+            <el-switch v-model='scope.row.mg_state' @change='modifyUserState(scope.row)'></el-switch>
           </template>
         </el-table-column>
         <el-table-column label='操作' width='180px'>
           <template slot-scope='scope'>
             <el-button type='primary' icon='el-icon-edit' size='mini'
-                       @click='reviseUserDialog(scope.row.id)'></el-button>
+                       @click='modifyUserDialog(scope.row.id)'></el-button>
             <el-button type='danger' icon='el-icon-delete' size='mini' @click='deleteUser(scope.row.id)'></el-button>
             <el-tooltip effect='dark' content='分配角色' placement='top' :enterable='false'>
-              <el-button type='warning' icon='el-icon-setting' size='mini'></el-button>
+              <el-button type='warning' icon='el-icon-setting' size='mini'
+                         @click='setRoleDialog(scope.row)'></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -81,9 +82,9 @@
     </el-dialog>
     <!--修改用户信息-->
     <el-dialog title='修改用户信息'
-               :visible.sync='reviseUserDialogVisible'
+               :visible.sync='modifyUserDialogVisible'
                width='50%'
-               @close='reviseUserDialogClose'>
+               @close='modifyUserDialogClose'>
       <el-form label-width='70px' :model='queryUserInfo' :rules='addFormRules' ref='queryUserInfoRef'>
         <el-form-item label='用户名' prop='username'>
           <el-input v-model='queryUserInfo.username' prefix-icon='el-icon-phone' disabled></el-input>
@@ -96,8 +97,34 @@
         </el-form-item>
       </el-form>
       <span slot='footer' class='dialog-footer'>
-        <el-button @click='reviseUserDialogVisible = false'>取 消</el-button>
-        <el-button type='primary' @click='reviseUser'>确 定</el-button>
+        <el-button @click='modifyUserDialogVisible = false'>取 消</el-button>
+        <el-button type='primary' @click='modifyUser'>确 定</el-button>
+       </span>
+    </el-dialog>
+
+    <!--分配角色-->
+    <el-dialog title='分配角色'
+               :visible.sync='setRoleDialogVisible'
+               width='50%'
+               @close='setRoleClose'>
+      <div>
+        <p>当前的用户：{{ userInfo.username }}</p>
+        <!--suppress JSUnresolvedVariable -->
+        <p>当前的角色：{{ userInfo.role_name }}</p>
+        <p>分配新角色：
+          <el-select v-model='selectedId' placeholder='请选择'>
+            <el-option
+              v-for='item in rolesList'
+              :key='item.id'
+              :label='item.roleName'
+              :value='item.id'>
+            </el-option>
+          </el-select>
+        </p>
+      </div>
+      <span slot='footer' class='dialog-footer'>
+        <el-button @click='setRoleDialogVisible = false'>取 消</el-button>
+        <el-button type='primary' @click='setRole()'>确 定</el-button>
        </span>
     </el-dialog>
   </div>
@@ -126,32 +153,41 @@ export default {
       callback(new Error('请输入合法的手机号码'))
     }
     return {
+      //获取用户数据列表参数
       queryInfo: {
         query: '',
         pagenum: 1,
         pagesize: 2
-        //  这里的数字不能加引号F
+        //这里的数字不能加引号
       },
+      //用户数据列表
       users: [],
+      //总页数
       total: 0,
-      // 控制对话框显示
+      //添加用户对话框显示与关闭
       addUserDialogVisible: false,
-      reviseUserDialogVisible: false,
+      //修改用户对话框显示与关闭
+      modifyUserDialogVisible: false,
+      //分配角色对话框显示与关闭
+      setRoleDialogVisible: false,
+      //查询用户信息数据
       queryUserInfo: {},
+      //添加用户数据
       addForm: {
         username: '',
         password: '',
         email: '',
         mobile: ''
       },
+      //添加用户验证规则
       addFormRules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' },
-          { min: 3, max: 10, message: '用户名长度在3到10位', trigger: 'blur' }
+          { min: 3, max: 10, message: '用户名长度应为3~11个字符', trigger: 'blur' }
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
-          { min: 6, max: 18, message: '密码长度在6到18位', trigger: 'blur' }
+          { min: 6, max: 18, message: '密码长度应为6~18个字符', trigger: 'blur' }
         ],
         email: [
           { required: true, message: '请输入邮箱', trigger: 'blur' },
@@ -161,13 +197,19 @@ export default {
           { required: true, message: '请输入手机号', trigger: 'blur' },
           { validator: checkMobile, trigger: 'blur' }
         ]
-      }
+      },
+      userInfo: {},
+      //所有角色列表
+      rolesList: {},
+      //已选择角色id
+      selectedId: ''
     }
   },
   created() {
     this.getUserList()
   },
   methods: {
+    //获取用户列表
     async getUserList() {
       const { data: res } = await this.$http.get('users', { params: this.queryInfo })
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
@@ -183,7 +225,7 @@ export default {
       this.getUserList()
     },
     //修改用户状态
-    async userStateChanged(userInfo) {
+    async modifyUserState(userInfo) {
       const { data: res } = await this.$http.put(`users/${userInfo.id}/state/${userInfo.mg_state}`)
       if (res.meta.status !== 200) {
         userInfo.mg_state = !userInfo.mg_state
@@ -191,19 +233,12 @@ export default {
       }
       this.$message.success('更新用户状态成功')
     },
-    //重置dialog
-    addUserDialogClose() {
-      this.$refs.addFormRef.resetFields()
-    },
-    reviseUserDialogClose() {
-      this.$refs.queryUserInfoRef.resetFields()
-    },
-    //添加用户
+    //添加用户以及对话框重置
     addUser() {
       this.$refs.addFormRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('users', this.addForm)
-        if (res.meta.status !== 201 || res.meta.status == 400) {
+        if (res.meta.status !== 201) {
           return this.$message.error(res.meta.msg)
         }
         this.$message.success('添加用户成功')
@@ -211,15 +246,21 @@ export default {
         await this.getUserList()
       })
     },
-    //修改用户
-    async reviseUserDialog(id) {
-      this.reviseUserDialogVisible = true
+    addUserDialogClose() {
+      this.$refs.addFormRef.resetFields()
+    },
+    //修改用户信息、对话框信息获取以及对话框重置
+    async modifyUserDialog(id) {
+      this.modifyUserDialogVisible = true
       const { data: res } = await this.$http.get('users/' + id)
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.queryUserInfo = res.data
       console.log(res)
     },
-    reviseUser() {
+    modifyUserDialogClose() {
+      this.$refs.queryUserInfoRef.resetFields()
+    },
+    modifyUser() {
       this.$refs.queryUserInfoRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.put(`users/` + this.queryUserInfo.id, {
@@ -228,25 +269,44 @@ export default {
         })
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.$message.success('修改成功')
-        this.reviseUserDialogVisible = false
+        this.modifyUserDialogVisible = false
         await this.getUserList()
       })
     },
     //根据id删除用户
     async deleteUser(id) {
-      const confirmResult = await this.$confirm('此操作将删除该用户, 是否继续?', '提示', {
+      const confirmResult = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).catch(err => err)
-
       if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
-
       const { data: res } = await this.$http.delete(`users/` + id)
       if (res.meta.status !== 200) return this.$message.error('删除用户失败')
       this.$message.success('已删除该用户')
       await this.getUserList()
-
+    },
+    //分配角色
+    async setRoleDialog(userInfo) {
+      this.userInfo = userInfo
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.rolesList = res.data
+      this.setRoleDialogVisible = true
+    },
+    async setRole() {
+      if (!this.selectedId) {
+        return this.$message.error('请选择要分配的角色')
+      }
+      const { data: res } = await this.$http.put(`users/${this.userInfo.id}/role`, { rid: this.selectedId })
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.$message.success('分配角色成功')
+      await this.getUserList()
+      this.setRoleDialogVisible = false
+    },
+    setRoleClose() {
+      this.selectedId = ''
+      this.userInfo = {}
     }
   }
 }
