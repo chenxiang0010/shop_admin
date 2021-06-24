@@ -85,7 +85,7 @@ export default {
 }
 
 .el-header {
-  background-color: #a2c2b6;
+  background-color: #4a5061;
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -110,7 +110,7 @@
 <script>
 export default {
   name: 'Roles',
-  data() {
+  data () {
     return {
       roles: [],
       rightsList: [],
@@ -136,19 +136,19 @@ export default {
       queryRolesInfo: {}
     }
   },
-  created() {
+  created () {
     this.getRolesList()
   },
   methods: {
-    async getRolesList() {
+    async getRolesList () {
       const { data: res } = await this.$http.get('roles')
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.roles = res.data
     },
-    addRolesDialogClose() {
+    addRolesDialogClose () {
       this.$refs.addRolesRef.resetFields()
     },
-    addRoles() {
+    addRoles () {
       this.$refs.addRolesRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('roles', this.addRolesForm)
@@ -160,7 +160,7 @@ export default {
         await this.getRolesList()
       })
     },
-    async deleteRoles(id) {
+    async deleteRoles (id) {
       //根据id删除用户
       const confirmResult = await this.$confirm('此操作将删除该角色, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -174,16 +174,16 @@ export default {
       await this.getRolesList()
     },
     //修改角色信息
-    modifyRolesDialogClose() {
+    modifyRolesDialogClose () {
       this.$refs.queryRolesInfoRef.resetFields()
     },
-    async modifyRolesDialog(id) {
+    async modifyRolesDialog (id) {
       this.modifyRolesDialogVisible = true
       const { data: res } = await this.$http.get('roles/' + id)
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.queryRolesInfo = res.data
     },
-    modifyRoles() {
+    modifyRoles () {
       this.$refs.queryRolesInfoRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.put(`roles/` + this.queryRolesInfo.roleId, {
@@ -197,7 +197,7 @@ export default {
       })
     },
     //分配权限
-    async setRightsDialog(role) {
+    async setRightsDialog (role) {
       this.roleId = role.id
       const { data: res } = await this.$http.get('rights/tree')
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
@@ -205,18 +205,18 @@ export default {
       this.getDefKeys(role, this.defKeys)
       this.setRightsDialogVisible = true
     },
-    getDefKeys(node, arr) {
+    getDefKeys (node, arr) {
       if (!node.children) {
         return arr.push(node.id)
       }
       //递归调用，不懂
       node.children.forEach(item => this.getDefKeys(item, arr))
     },
-    rightsClosed() {
+    rightsClosed () {
       //重置数组
       this.defKeys = []
     },
-    async setRights() {
+    async setRights () {
       const keys = [
         ...this.$refs.treeRef.getCheckedKeys(),
         ...this.$refs.treeRef.getHalfCheckedKeys()
@@ -229,7 +229,7 @@ export default {
       this.setRightsDialogVisible = false
     },
     //删除权限
-    async deleteRights(role, rightId) {
+    async deleteRights (role, rightId) {
       const confirmResult = await this.$confirm('此操作将删除该角色权限, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

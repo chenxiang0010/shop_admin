@@ -4,8 +4,12 @@ import router from './router'
 import './plugins/element.js'
 import axios from 'axios'
 import store from './store'
+import echarts from 'echarts'
+import TreeTable from 'vue-table-with-tree-grid'
 
 Vue.config.productionTip = false
+Vue.component('tree-table', TreeTable)
+Vue.prototype.$echarts = echarts
 Vue.prototype.$http = axios
 axios.interceptors.request.use(config => {
   config.headers.Authorization = window.sessionStorage.getItem('token')

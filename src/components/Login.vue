@@ -23,7 +23,7 @@
 <script>
 export default {
   name: 'Login',
-  data() {
+  data () {
     return {
       //登录数据
       loginForm: {
@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     // 登录按钮
-    login() {
+    login () {
       this.$refs.loginRef.validate(async valid => {
         if (!valid) return
         const { data: res } = await this.$http.post('login', this.loginForm)
@@ -57,7 +57,7 @@ export default {
       })
     },
     //重置输入框
-    resetLogin() {
+    resetLogin () {
       this.$refs.loginRef.resetFields()
     }
   }
