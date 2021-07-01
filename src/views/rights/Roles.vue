@@ -108,6 +108,16 @@
 </template>
 
 <script>
+import {
+  _getRoleList,
+  _addRole,
+  _getRoleInfo,
+  _modifyRoleInfo,
+  _delRole,
+  _getUserRight,
+  _setUserRight, _delRight
+} from '@/network/roles'
+
 export default {
   name: 'Roles',
   data () {
@@ -140,70 +150,89 @@ export default {
     this.getRolesList()
   },
   methods: {
-    async getRolesList () {
-      const { data: res } = await this.$http.get('roles')
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.roles = res.data
+    //获取角色列表
+    getRolesList () {
+      _getRoleList().then(res => {
+        this.roles = res.data
+      })
+    },
+
+    //添加角色
+    addRoles () {
+      this.$refs.addRolesRef.validate(valid => {
+        if (!valid) return
+        _addRole(this.addRolesForm).then(res => {
+          if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+          this.$message.success('添加角色成功')
+          this.addRolesDialogVisible = false
+          this.getRolesList()
+        })
+      })
     },
     addRolesDialogClose () {
       this.$refs.addRolesRef.resetFields()
     },
-    addRoles () {
-      this.$refs.addRolesRef.validate(async valid => {
-        if (!valid) return
-        const { data: res } = await this.$http.post('roles', this.addRolesForm)
-        if (res.meta.status !== 201) {
-          return this.$message.error(res.meta.msg)
-        }
-        this.$message.success('添加角色成功')
-        this.addRolesDialogVisible = false
-        await this.getRolesList()
+
+    //修改角色信息
+    async modifyRolesDialog (id) {
+      this.modifyRolesDialogVisible = true
+      _getRoleInfo(id).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.queryRolesInfo = res.data
       })
     },
-    async deleteRoles (id) {
-      //根据id删除用户
-      const confirmResult = await this.$confirm('此操作将删除该角色, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).catch(err => err)
-      if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
-      const { data: res } = await this.$http.delete(`roles/` + id)
-      if (res.meta.status !== 200) return this.$message.error('删除角色失败')
-      this.$message.success('已删除该角色')
-      await this.getRolesList()
+    modifyRoles () {
+      this.$refs.queryRolesInfoRef.validate(valid => {
+        if (!valid) return
+        _modifyRoleInfo(this.queryRolesInfo.roleId, {
+          roleName: this.queryRolesInfo.roleName,
+          roleDesc: this.queryRolesInfo.roleDesc
+        }).then(res => {
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+          this.$message.success('修改成功')
+          this.modifyRolesDialogVisible = false
+          this.getRolesList()
+        })
+      })
     },
-    //修改角色信息
     modifyRolesDialogClose () {
       this.$refs.queryRolesInfoRef.resetFields()
     },
-    async modifyRolesDialog (id) {
-      this.modifyRolesDialogVisible = true
-      const { data: res } = await this.$http.get('roles/' + id)
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.queryRolesInfo = res.data
-    },
-    modifyRoles () {
-      this.$refs.queryRolesInfoRef.validate(async valid => {
-        if (!valid) return
-        const { data: res } = await this.$http.put(`roles/` + this.queryRolesInfo.roleId, {
-          roleName: this.queryRolesInfo.roleName,
-          roleDesc: this.queryRolesInfo.roleDesc
+
+    //根据id删除角色
+    deleteRoles (id) {
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '已删除角色'
         })
-        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-        this.$message.success('修改成功')
-        this.modifyRolesDialogVisible = false
-        await this.getRolesList()
+        _delRole(id).then(res => {
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+          this.getRolesList()
+        })
+      }).catch(action => {
+        this.$message({
+          type: 'info',
+          message: action === 'cancel'
+            ? '已取消删除'
+            : '停留在当前页面'
+        })
       })
     },
+
     //分配权限
-    async setRightsDialog (role) {
+    setRightsDialog (role) {
       this.roleId = role.id
-      const { data: res } = await this.$http.get('rights/tree')
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.rightsList = res.data
-      this.getDefKeys(role, this.defKeys)
-      this.setRightsDialogVisible = true
+      _getUserRight(role).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.rightsList = res.data
+        this.getDefKeys(role, this.defKeys)
+        this.setRightsDialogVisible = true
+      })
     },
     getDefKeys (node, arr) {
       if (!node.children) {
@@ -216,32 +245,44 @@ export default {
       //重置数组
       this.defKeys = []
     },
-    async setRights () {
+    setRights () {
       const keys = [
         ...this.$refs.treeRef.getCheckedKeys(),
         ...this.$refs.treeRef.getHalfCheckedKeys()
       ]
       const idArr = keys.join(',')
-      const { data: res } = await this.$http.post(`roles/${this.roleId}/rights`, { rids: idArr })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.$message.success('分配权限成功')
-      await this.getRolesList()
-      this.setRightsDialogVisible = false
+      _setUserRight(this.roleId, { rids: idArr }).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success('分配权限成功')
+        this.getRolesList()
+        this.setRightsDialogVisible = false
+      })
     },
+
     //删除权限
     async deleteRights (role, rightId) {
-      const confirmResult = await this.$confirm('此操作将删除该角色权限, 是否继续?', '提示', {
+
+      this.$confirm('此操作将永久删除该权限, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(err => err)
-
-      if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
-
-      const { data: res } = await this.$http.delete(`roles/${role.id}/rights/${rightId}`)
-      if (res.meta.status !== 200) return this.$message.error('删除权限失败')
-      this.$message.success('已删除该权限')
-      role.children = res.data
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '已删除权限'
+        })
+        _delRight(role.id, rightId).then(res => {
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+          role.children = res.data
+        })
+      }).catch(action => {
+        this.$message({
+          type: 'info',
+          message: action === 'cancel'
+            ? '已取消删除'
+            : '停留在当前页面'
+        })
+      })
     }
   }
 }

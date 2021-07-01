@@ -16,54 +16,22 @@ const Reports = () => import('@/views/report/Reports')
 Vue.use(VueRouter)
 
 const routes = [
+  { path: '', redirect: '/login' },
+  { path: '/login', component: Login },
   {
-    path: '',
-    redirect: '/login'
-  },
-  {
-    path: '/login',
-    component: Login
-  }, {
     path: '/home',
     component: Home,
     redirect: '/welcome',
     children: [
-      {
-        path: '/welcome',
-        component: Welcome
-      },
-      {
-        path: '/users',
-        component: Users
-      },
-      {
-        path: '/roles',
-        component: Roles
-      },
-      {
-        path: '/rights',
-        component: Rights
-      },
-      {
-        path: '/goods',
-        component: Goods
-      },
-      {
-        path: '/params',
-        component: Params
-      },
-      {
-        path: '/categories',
-        component: Categories
-      },
-      {
-        path: '/orders',
-        component: Orders
-      },
-      {
-        path: '/reports',
-        component: Reports
-      }
+      { path: '/welcome', component: Welcome },
+      { path: '/users', component: Users },
+      { path: '/roles', component: Roles },
+      { path: '/rights', component: Rights },
+      { path: '/goods', component: Goods },
+      { path: '/params', component: Params },
+      { path: '/categories', component: Categories },
+      { path: '/orders', component: Orders },
+      { path: '/reports', component: Reports }
     ]
   }
 ]

@@ -25,22 +25,24 @@
 </template>
 
 <script>
+import { _getRightsList } from '@/network/rights'
+
 export default {
   name: 'Rights',
-  data() {
+  data () {
     return {
       rights: []
     }
   },
-  created() {
+  created () {
     this.getRightsList()
   },
   methods: {
-    async getRightsList() {
-      const { data: res } = await this.$http.get('rights/list')
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      console.log(res)
-      this.rights = res.data
+    getRightsList () {
+      _getRightsList().then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.rights = res.data
+      })
     }
   }
 }

@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import { login } from '@/network/login'
+
 export default {
   name: 'Login',
   data () {
@@ -46,14 +48,15 @@ export default {
   methods: {
     // 登录按钮
     login () {
-      this.$refs.loginRef.validate(async valid => {
+      this.$refs.loginRef.validate(valid => {
         if (!valid) return
-        const { data: res } = await this.$http.post('login', this.loginForm)
-        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-        this.$message.success('登录成功')
-        //将token值保存
-        window.sessionStorage.setItem('token', res.data.token)
-        await this.$router.push('/home')
+        login(this.loginForm).then(res => {
+          console.log(res)
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+          this.$message.success('登录成功')
+          window.sessionStorage.setItem('token', res.data.token)
+          this.$router.push('/home')
+        })
       })
     },
     //重置输入框

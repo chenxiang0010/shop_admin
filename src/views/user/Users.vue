@@ -55,6 +55,7 @@
         :total='total'>
       </el-pagination>
     </el-card>
+
     <!--添加用户-->
     <el-dialog
       title='添加用户'
@@ -131,9 +132,20 @@
 </template>
 
 <script>
+import {
+  _userList,
+  _getUserInfo,
+  _modifyUserInfo,
+  _modifyUserState,
+  _addUser,
+  _delUser,
+  _getUserRole,
+  _setUserRole
+} from '@/network/user'
+
 export default {
   name: 'Users',
-  data() {
+  data () {
     // 自定义邮箱规则
     let checkEmail = (rule, value, callback) => {
       const regEmail = /^\w+@\w+(\.\w+)+$/
@@ -205,106 +217,124 @@ export default {
       selectedId: ''
     }
   },
-  created() {
+  created () {
     this.getUserList()
   },
   methods: {
     //获取用户列表
-    async getUserList() {
-      const { data: res } = await this.$http.get('users', { params: this.queryInfo })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.users = res.data.users
-      this.total = res.data.total
+    getUserList () {
+      _userList(this.queryInfo).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.users = res.data.users
+        this.total = res.data.total
+      })
     },
-    handleSizeChange(newSize) {
+    handleSizeChange (newSize) {
       this.queryInfo.pagesize = newSize
       this.getUserList()
     },
-    handleCurrentChange(newPage) {
+    handleCurrentChange (newPage) {
       this.queryInfo.pagenum = newPage
       this.getUserList()
     },
+
     //修改用户状态
-    async modifyUserState(userInfo) {
-      const { data: res } = await this.$http.put(`users/${userInfo.id}/state/${userInfo.mg_state}`)
-      if (res.meta.status !== 200) {
-        userInfo.mg_state = !userInfo.mg_state
-        return this.$message.error('修改用户状态失败')
-      }
-      this.$message.success('更新用户状态成功')
-    },
-    //添加用户以及对话框重置
-    addUser() {
-      this.$refs.addFormRef.validate(async valid => {
-        if (!valid) return
-        const { data: res } = await this.$http.post('users', this.addForm)
-        if (res.meta.status !== 201) {
-          return this.$message.error(res.meta.msg)
-        }
-        this.$message.success('添加用户成功')
-        this.addUserDialogVisible = false
-        await this.getUserList()
+    modifyUserState (userInfo) {
+      _modifyUserState(userInfo).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success('更新用户状态成功')
       })
     },
-    addUserDialogClose() {
+
+    //添加用户以及对话框重置
+    addUser () {
+      this.$refs.addFormRef.validate(valid => {
+        if (!valid) return
+        _addUser(this.addForm).then(res => {
+          if (res.meta.status !== 201) {
+            return this.$message.error(res.data.meta.msg)
+          }
+          this.$message.success('添加用户成功')
+          this.addUserDialogVisible = false
+          this.getUserList()
+        })
+      })
+    },
+    addUserDialogClose () {
       this.$refs.addFormRef.resetFields()
     },
+
     //修改用户信息、对话框信息获取以及对话框重置
-    async modifyUserDialog(id) {
+    modifyUserDialog (id) {
       this.modifyUserDialogVisible = true
-      const { data: res } = await this.$http.get('users/' + id)
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.queryUserInfo = res.data
-      console.log(res)
-    },
-    modifyUserDialogClose() {
-      this.$refs.queryUserInfoRef.resetFields()
-    },
-    modifyUser() {
-      this.$refs.queryUserInfoRef.validate(async valid => {
-        if (!valid) return
-        const { data: res } = await this.$http.put(`users/` + this.queryUserInfo.id, {
-          email: this.queryUserInfo.email,
-          mobile: this.queryUserInfo.mobile
-        })
+      _getUserInfo(id).then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-        this.$message.success('修改成功')
-        this.modifyUserDialogVisible = false
-        await this.getUserList()
+        this.$message.success('获取用户信息成功')
+        this.queryUserInfo = res.data
       })
     },
+    modifyUser () {
+      this.$refs.queryUserInfoRef.validate(valid => {
+        if (!valid) return
+        _modifyUserInfo(this.queryUserInfo.id, {
+          email: this.queryUserInfo.email,
+          mobile: this.queryUserInfo.mobile
+        }).then(res => {
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+          this.$message.success('修改用户信息成功')
+          this.getUserList()
+        })
+
+        this.modifyUserDialogVisible = false
+        this.getUserList()
+      })
+    },
+    modifyUserDialogClose () {
+      this.$refs.queryUserInfoRef.resetFields()
+    },
+
     //根据id删除用户
-    async deleteUser(id) {
-      const confirmResult = await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+    deleteUser (id) {
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(err => err)
-      if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
-      const { data: res } = await this.$http.delete(`users/` + id)
-      if (res.meta.status !== 200) return this.$message.error('删除用户失败')
-      this.$message.success('已删除该用户')
-      await this.getUserList()
+      }).then(() => {
+        _delUser(id).then(res => {
+          if (res.meta.status !== 200) return this.$message.error('删除用户失败')
+          this.$message.success('已删除该用户')
+          this.getUserList()
+        })
+      }).catch(action => {
+        this.$message({
+          type: 'info',
+          message: action === 'cancel'
+            ? '已取消删除'
+            : '停留在当前页面'
+        })
+      })
     },
+
     //分配角色
-    async setRoleDialog(userInfo) {
+    setRoleDialog (userInfo) {
       this.userInfo = userInfo
-      const { data: res } = await this.$http.get('roles')
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.rolesList = res.data
-      this.setRoleDialogVisible = true
+      _getUserRole().then(res => {
+        this.rolesList = res.data
+        this.setRoleDialogVisible = true
+      })
     },
-    async setRole() {
+    setRole () {
       if (!this.selectedId) {
         return this.$message.error('请选择要分配的角色')
       }
-      const { data: res } = await this.$http.put(`users/${this.userInfo.id}/role`, { rid: this.selectedId })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.$message.success('分配角色成功')
-      await this.getUserList()
-      this.setRoleDialogVisible = false
+      _setUserRole(this.userInfo.id, { rid: this.selectedId }).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success('分配角色成功')
+        this.getUserList()
+        this.setRoleDialogVisible = false
+      })
     },
-    setRoleClose() {
+    setRoleClose () {
       this.selectedId = ''
       this.userInfo = {}
     }

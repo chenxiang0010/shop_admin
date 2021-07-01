@@ -69,8 +69,11 @@
     </el-dialog>
 
     <!--修改分类-->
-    <el-dialog title='编辑分类' :visible.sync='modifyCateDialogVisible' width='50%' @close='modifyCateDialogClose'>
-      <el-form label-width='90px' ref='modifyCateRef'>
+    <el-dialog title='编辑分类'
+               :visible.sync='modifyCateDialogVisible'
+               width='50%'
+               @close='modifyCateDialogClose'>
+      <el-form label-width='90px' :model='queryCateForm' ref='modifyCateRef'>
         <el-form-item label='编辑分类' prop='cat_name'>
           <el-input v-model='queryCateForm.cat_name' prefix-icon='el-icon-phone'></el-input>
         </el-form-item>
@@ -84,6 +87,15 @@
 </template>
 
 <script>
+import {
+  _addCate,
+  _deleteCate,
+  _getCategoryList,
+  _getCateInfo,
+  _getModifyCateInfo,
+  _modifyCate
+} from '@/network/categories'
+
 export default {
   name: 'Categories',
   data () {
@@ -123,11 +135,13 @@ export default {
     this.getCategoryList()
   },
   methods: {
-    async getCategoryList () {
-      const { data: res } = await this.$http.get(`categories`, { params: this.queryCategory })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.category = res.data.result
-      this.total = res.data.total
+    //获取分类列表
+    getCategoryList () {
+      _getCategoryList(this.queryCategory).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.category = res.data.result
+        this.total = res.data.total
+      })
     },
     handleSizeChange (newSize) {
       this.queryCategory.pagesize = newSize
@@ -137,17 +151,14 @@ export default {
       this.queryCategory.pagenum = newPage
       this.getCategoryList()
     },
-    async addCateDialog () {
-      const { data: res } = await this.$http.get(`categories`, { params: { type: 2 } })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.parentCateList = res.data
-      this.addCateDialogVisible = true
-    },
-    addCateDialogClose () {
-      this.$refs.addCateRef.resetFields()
-      this.addCateForm.cat_level = 0
-      this.addCateForm.cat_pid = 0
-      this.selectedKeys = []
+
+    //添加分类
+    addCateDialog () {
+      _getCateInfo({ type: 2 }).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.parentCateList = res.data
+        this.addCateDialogVisible = true
+      })
     },
     parentCateChanged () {
       if (this.selectedKeys.length > 0) {
@@ -161,43 +172,65 @@ export default {
     addCate () {
       this.$refs.addCateRef.validate(async valid => {
         if (!valid) return
-        const { data: res } = await this.$http.post(`categories`, this.addCateForm)
-        console.log(res)
-        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
-        this.$message.success('创建分类成功')
-        await this.getCategoryList()
-        this.addCateDialogVisible = false
+        _addCate(this.addCateForm).then(res => {
+          if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+          this.$message.success('创建分类成功')
+          this.getCategoryList()
+          this.addCateDialogVisible = false
+        })
       })
     },
-    //修改商品分类
-    async modifyCateDialog (id) {
-      const { data: res } = await this.$http.get(`categories/` + id)
-      console.log(res)
-      this.queryCateForm = res.data
-      this.modifyCateDialogVisible = true
+    addCateDialogClose () {
+      this.$refs.addCateRef.resetFields()
+      this.addCateForm.cat_level = 0
+      this.addCateForm.cat_pid = 0
+      this.selectedKeys = []
     },
-    async modifyCate () {
-      const { data: res } = await this.$http.put(`categories/` + this.queryCateForm.cat_id, { cat_name: this.queryCateForm.cat_name })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.$message.success('修改成功')
-      await this.getCategoryList()
-      this.modifyCateDialogVisible = false
+
+    //修改商品分类
+    modifyCateDialog (id) {
+      _getModifyCateInfo(id).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.queryCateForm = res.data
+        this.modifyCateDialogVisible = true
+      })
+    },
+    modifyCate () {
+      this.$refs.modifyCateRef.validate(validate => {
+        if (!validate) return
+        console.log(this.queryCateForm)
+        _modifyCate(this.queryCateForm.cat_id, { cat_name: this.queryCateForm.cat_name }).then(res => {
+          console.log(this.queryCateForm.cat_name)
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+          this.$message.success('修改成功')
+          this.getCategoryList()
+          this.modifyCateDialogVisible = false
+        })
+      })
     },
     modifyCateDialogClose () {
       this.$refs.modifyCateRef.resetFields()
     },
     //删除分类
-    async deleteCate (id) {
-      const confirmResult = await this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
+    deleteCate (id) {
+      this.$confirm('此操作将永久删除该分类, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(err => err)
-      if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
-      const { data: res } = await this.$http.delete(`categories/` + id)
-      if (res.meta.status !== 200) return this.$message.error('删除分类失败')
-      this.$message.success('已删除该分类')
-      await this.getCategoryList()
+      }).then(() => {
+        _deleteCate(id).then(res => {
+          if (res.meta.status !== 200) return this.$message.error('删除分类失败')
+          this.$message.success('已删除该分类')
+          this.getCategoryList()
+        })
+      }).catch(action => {
+        this.$message({
+          type: 'info',
+          message: action === 'cancel'
+            ? '已取消删除'
+            : '停留在当前页面'
+        })
+      })
     }
   }
 }

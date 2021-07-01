@@ -40,9 +40,11 @@
 </template>
 
 <script>
+import { menuList } from '@/network/home'
+
 export default {
   name: 'Home',
-  data() {
+  data () {
     return {
       menuList: [],
       iconObj: {
@@ -55,24 +57,26 @@ export default {
       isCollapse: false
     }
   },
-  created() {
+  created () {
     this.getMenuList()
   },
   methods: {
     //退出登录
-    logout() {
+    logout () {
       window.sessionStorage.clear()
       this.$router.push('/login')
       return this.$message.success('已退出登录')
     },
     //获取左侧菜单
-    async getMenuList() {
-      const { data: res } = await this.$http.get('menus')
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.menuList = res.data
+    getMenuList () {
+      menuList().then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success('获取左侧菜单列表成功')
+        this.menuList = res.data
+      })
     },
     //是否折叠左侧菜单
-    toggleCollapse() {
+    toggleCollapse () {
       this.isCollapse = !this.isCollapse
     }
   }
