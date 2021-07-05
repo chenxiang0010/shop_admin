@@ -148,7 +148,7 @@ export default {
   data () {
     // 自定义邮箱规则
     let checkEmail = (rule, value, callback) => {
-      const regEmail = /^\w+@\w+(\.\w+)+$/
+      const regEmail = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/
       if (regEmail.test(value)) {
         // 合法邮箱
         return callback()
@@ -157,7 +157,7 @@ export default {
     }
     // 自定义手机号规则
     let checkMobile = (rule, value, callback) => {
-      const regMobile = /^1[34578]\d{9}$/
+      const regMobile = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/
       if (regMobile.test(value)) {
         return callback()
       }

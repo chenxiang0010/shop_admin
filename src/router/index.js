@@ -8,6 +8,7 @@ const Users = () => import('@/views/user/Users')
 const Roles = () => import('@/views/rights/Roles')
 const Rights = () => import('@/views/rights/Rights')
 const Goods = () => import('@/views/commodity/Goods')
+const AddGoods = () => import('@/views/commodity/AddGoods')
 const Params = () => import('@/views/commodity/Params')
 const Categories = () => import('@/views/commodity/Categories')
 const Orders = () => import('@/views/order/Orders')
@@ -28,6 +29,7 @@ const routes = [
       { path: '/roles', component: Roles },
       { path: '/rights', component: Rights },
       { path: '/goods', component: Goods },
+      { path: '/goods/addgoods', component: AddGoods },
       { path: '/params', component: Params },
       { path: '/categories', component: Categories },
       { path: '/orders', component: Orders },

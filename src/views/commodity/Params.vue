@@ -35,7 +35,9 @@
           <el-table :data='manyData' stripe border>
             <el-table-column type='expand'>
               <template slot-scope='scope'>
-                <el-tag closable v-for='(item,index) in scope.row.attr_vals' :key='index'>{{ item }}</el-tag>
+                <el-tag closable v-for='(item,index) in scope.row.attr_vals' :key='index'
+                        @close='handleClose(index,scope.row)'>{{ item }}
+                </el-tag>
                 <el-input
                   class='input-new-tag'
                   v-if='scope.row.inputVisible'
@@ -70,7 +72,9 @@
           <el-table :data='onlyData' stripe border>
             <el-table-column type='expand'>
               <template slot-scope='scope'>
-                <el-tag closable v-for='(item,index) in scope.row.attr_vals' :key='index'>{{ item }}</el-tag>
+                <el-tag closable v-for='(item,index) in scope.row.attr_vals' :key='index'
+                        @close='handleClose(index,scope.row)'>{{ item }}
+                </el-tag>
                 <el-input
                   class='input-new-tag'
                   v-if='scope.row.inputVisible'
@@ -138,6 +142,9 @@
 </template>
 
 <script>
+import { _getCategoryList } from '@/network/categories'
+import { _getParams, _addValue, _getValue, _modifyValue, _delParams } from '@/network/params'
+
 export default {
   name: 'Params',
   data () {
@@ -177,10 +184,11 @@ export default {
     }
   },
   methods: {
-    async getCategoryList () {
-      const { data: res } = await this.$http.get(`categories`)
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.categoryList = res.data
+    getCategoryList () {
+      _getCategoryList().then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.categoryList = res.data
+      })
     },
     handleChange () {
       if (this.selectedCateKeys.length !== 3) {
@@ -199,70 +207,85 @@ export default {
       }
       this.getParams()
     },
-    async getParams () {
-      const { data: res } = await this.$http.get(`categories/${this.cateId}/attributes`, { params: { sel: this.activeName } })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      res.data.forEach(item => {
-          item.attr_vals = item.attr_vals ? item.attr_vals.split(',') : []
-          item.inputVisible = false
-          item.inputValue = ''
+
+    getParams () {
+      _getParams(this.cateId, { sel: this.activeName }).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        res.data.forEach(item => {
+            item.attr_vals = item.attr_vals ? item.attr_vals.split(',') : []
+            item.inputVisible = false
+            item.inputValue = ''
+          }
+        )
+        if (this.activeName === 'many') {
+          this.manyData = res.data
+        } else {
+          this.onlyData = res.data
         }
-      )
-      if (this.activeName === 'many') {
-        this.manyData = res.data
-      } else {
-        this.onlyData = res.data
-      }
+      })
     },
+
     //添加属性
-    async addValue () {
-      const { data: res } = await this.$http.post(`categories/${this.cateId}/attributes`, {
+    addValue () {
+      _addValue(this.cateId, {
         attr_name: this.addValueForm.attr_name,
         attr_sel: this.activeName
+      }).then(res => {
+        if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
+        this.$message.success('添加' + this.titleText + '成功')
+        this.getParams()
+        this.addValueDialogVisible = false
       })
-      if (res.meta.status !== 201) return this.$message.error(res.meta.msg)
-      this.$message.success('添加' + this.titleText + '成功')
-      await this.getParams()
-      this.addValueDialogVisible = false
     },
     addValueDialogClose () {
       this.$refs.addValueRef.resetFields()
     },
+
     //修改之前需要获取属性参数
-    async modifyValueDialog (attrId) {
-      const { data: res } = await this.$http.get(`categories/${this.cateId}/attributes/${attrId}`, { params: { attr_sel: this.activeName } })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.queryData = res.data
-      console.log(res)
-      this.modifyValueDialogVisible = true
+    modifyValueDialog (attrId) {
+      _getValue(this.cateId, attrId, { attr_sel: this.activeName }).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.queryData = res.data
+        this.modifyValueDialogVisible = true
+      })
     },
-    async modifyValue () {
-      const { data: res } = await this.$http.put(`categories/${this.cateId}/attributes/${this.queryData.attr_id}`, {
+    modifyValue () {
+      _modifyValue(this.cateId, this.queryData.attr_id, {
         attr_name: this.queryData.attr_name,
         attr_sel: this.activeName
+      }).then(res => {
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success('修改' + this.titleText + '成功')
+        this.getParams()
+        this.modifyValueDialogVisible = false
       })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.$message.success('修改' + this.titleText + '成功')
-      await this.getParams()
-      this.modifyValueDialogVisible = false
     },
     modifyValueDialogClose () {
       this.$refs.modifyValueRef.resetFields()
     },
+
     //根据id删除属性
-    async deleteParams (id) {
-      const confirmResult = await this.$confirm('此操作将永久删除该' + this.titleText + ', 是否继续?', '提示', {
+    deleteParams (id) {
+      this.$confirm('此操作将永久删除该' + this.titleText + ', 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(err => err)
-      if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
-      const { data: res } = await this.$http.delete(`categories/${this.cateId}/attributes/` + id)
-      if (res.meta.status !== 200) return this.$message.error('删除' + this.titleText + '失败')
-      this.$message.success('已删除该' + this.titleText)
-      await this.getParams()
+      }).then(() => {
+        _delParams(this.cateId, id).then(res => {
+          if (res.meta.status !== 200) return this.$message.error('删除' + this.titleText + '失败')
+          this.$message.success('已删除该' + this.titleText)
+          this.getParams()
+        })
+      }).catch(action => {
+        this.$message({
+          type: 'info',
+          message: action === 'cancel'
+            ? '已取消删除'
+            : '停留在当前页面'
+        })
+      })
     },
-    async handleInputConfirm (row) {
+    handleInputConfirm (row) {
       if (row.inputValue.trim().length === 0) {
         row.inputValue = ''
         row.inputVisible = false
@@ -270,21 +293,29 @@ export default {
       row.attr_vals.push(row.inputValue.trim())
       row.inputValue = ''
       row.inputVisible = false
-
-      const { data: res } = await this.$http.put(`categories/${this.cateId}/attributes/${row.attr_id}`, {
-        attr_name: row.attr_name,
-        attr_sel: row.attr_sel,
-        attr_vals: row.attr_vals.join(',')
-      })
-      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-      this.$message.success('添加成功')
-      await this.getParams()
+      this.saveValue(row)
     },
     showInput (row) {
       row.inputVisible = true
       this.$nextTick(() => {
         this.$refs.saveTagInput.$refs.input.focus()
       })
+    },
+    saveValue (row) {
+      _modifyValue(this.cateId, row.attr_id, {
+        attr_name: row.attr_name,
+        attr_sel: row.attr_sel,
+        attr_vals: row.attr_vals.join(',')
+      }).then(res => {
+        console.log(res)
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success('添加成功')
+        this.getParams()
+      })
+    },
+    handleClose (index, row) {
+      row.attr_vals.splice(index, 1)
+      this.saveValue(row)
     }
   }
 }
