@@ -1,18 +1,23 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-const Login = () => import('@/components/Login')
-const Home = () => import('@/components/Home')
-const Welcome = () => import('@/components/Welcome')
-const Users = () => import('@/views/user/Users')
-const Roles = () => import('@/views/rights/Roles')
-const Rights = () => import('@/views/rights/Rights')
-const Goods = () => import('@/views/commodity/Goods')
-const AddGoods = () => import('@/views/commodity/AddGoods')
-const Params = () => import('@/views/commodity/Params')
-const Categories = () => import('@/views/commodity/Categories')
-const Orders = () => import('@/views/order/Orders')
-const Reports = () => import('@/views/report/Reports')
+const Login = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '@/components/Login')
+const Home = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '@/components/Home')
+const Welcome = () => import(/* webpackChunkName: "Login_Home_Welcome" */ '@/components/Welcome')
+
+const Users = () => import(/* webpackChunkName: "User" */ '@/views/user/Users')
+
+const Roles = () => import(/* webpackChunkName: "Roles_Rights" */ '@/views/rights/Roles')
+const Rights = () => import(/* webpackChunkName: "Roles_Rights" */ '@/views/rights/Rights')
+
+const Goods = () => import(/* webpackChunkName: "Goods_AddGoods_Params_Categories" */ '@/views/commodity/Goods')
+const AddGoods = () => import(/* webpackChunkName: "Goods_AddGoods_Params_Categories" */ '@/views/commodity/AddGoods')
+const Params = () => import(/* webpackChunkName: "Goods_AddGoods_Params_Categories" */ '@/views/commodity/Params')
+const Categories = () => import(/* webpackChunkName: "Goods_AddGoods_Params_Categories" */ '@/views/commodity/Categories')
+
+const Orders = () => import(/* webpackChunkName: "Orders" */ '@/views/order/Orders')
+
+const Reports = () => import(/* webpackChunkName: "Report" */ '@/views/report/Reports')
 
 Vue.use(VueRouter)
 
@@ -50,18 +55,5 @@ router.beforeEach((to, from, next) => {
   if (!tokenStr) return next('/login')
   next()
 })
-
-// 解决上面跳转加参数报错问题
-const originalPush = VueRouter.prototype.push
-VueRouter.prototype.push = function push (location, onResolve, onReject) {
-  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
-  return originalPush.call(this, location).catch(err => err)
-}
-
-// 修改路由replace方法,阻止重复点击报错
-const originalReplace = VueRouter.prototype.replace
-VueRouter.prototype.replace = function replace (location) {
-  return originalReplace.call(this, location).catch(err => err)
-}
 
 export default router

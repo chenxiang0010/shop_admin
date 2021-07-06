@@ -1,4 +1,5 @@
 import axios from 'axios'
+import NProgress from 'nprogress'
 
 export function request (config) {
   //创建实例
@@ -8,11 +9,13 @@ export function request (config) {
 
   //请求拦截器
   instance.interceptors.request.use(success => {
+    NProgress.start()
     success.headers.Authorization = window.sessionStorage.getItem('token')
     return success
   })
 
   instance.interceptors.response.use(res => {
+    NProgress.done()
     return res.data
   })
   //发送请求
