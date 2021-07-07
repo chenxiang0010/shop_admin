@@ -8,7 +8,7 @@
     </el-breadcrumb>
 
     <el-card>
-      <div id='main' style='width: 600px;height: 400px;'></div>
+      <div id='main' style='width: 800px;height: 550px;'></div>
     </el-card>
   </div>
 </template>
@@ -39,7 +39,7 @@ export default {
     }
   },
   mounted () {
-    const myChart = echarts.init(document.querySelector('main'))
+    const myChart = echarts.init(document.getElementById('main'))
     _getReport().then(res => {
       console.log(res)
       const result = _.merge(res.data, this.options)
