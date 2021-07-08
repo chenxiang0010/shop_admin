@@ -32,7 +32,9 @@
         </el-table-column>
         <el-table-column label='操作' width='180px'>
           <template slot-scope='scope'>
-            <el-button type='primary' icon='el-icon-edit' size='mini'>编辑</el-button>
+            <el-button icon='el-icon-edit' size='mini' type='primary' @click='modifyGoodsDialog(scope.row.goods_id)'>
+              编辑
+            </el-button>
             <el-button type='danger' icon='el-icon-delete' size='mini' @click='delGoods(scope.row.goods_id)'>删除
             </el-button>
           </template>
@@ -50,11 +52,34 @@
         :total='total'>
       </el-pagination>
     </el-card>
+
+    <el-dialog :visible.sync='GoodsDialog'
+               title='修改商品信息'
+               width='50%'>
+      <el-form ref='queryGoodsInfoRef' :model='queryGoodsInfo' label-width='70px'>
+        <el-form-item label='商品名称' prop='goods_name'>
+          <el-input v-model='queryGoodsInfo.goods_name' prefix-icon='el-icon-user-solid'></el-input>
+        </el-form-item>
+        <el-form-item label='价格' prop='goods_price'>
+          <el-input v-model='queryGoodsInfo.goods_price' prefix-icon='el-icon-user-solid' type='number'></el-input>
+        </el-form-item>
+        <el-form-item label='数量' prop='goods_number'>
+          <el-input v-model='queryGoodsInfo.goods_number' prefix-icon='el-icon-user-solid' type='number'></el-input>
+        </el-form-item>
+        <el-form-item label='重量' prop='goods_weight'>
+          <el-input v-model='queryGoodsInfo.goods_weight' prefix-icon='el-icon-user-solid' type='number'></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot='footer' class='dialog-footer'>
+        <el-button @click='GoodsDialog = false'>取 消</el-button>
+        <el-button type='primary' @click='modifyGoods'>确 定</el-button>
+       </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { _getGoods, _delGoods } from '@/network/goods'
+import { _delGoods, _getGoods, _getGoodsInfo, _modifyGoods } from '@/network/goods'
 
 export default {
   name: 'Goods',
@@ -66,7 +91,9 @@ export default {
         pagenum: 1,
         pagesize: 5
       },
-      total: 0
+      total: 0,
+      GoodsDialog: false,
+      queryGoodsInfo: {}
     }
   },
   created () {
@@ -92,6 +119,30 @@ export default {
     //添加商品
     addGoods () {
       this.$router.push('/goods/addgoods')
+    },
+
+    //修改商品
+    modifyGoodsDialog (id) {
+      this.GoodsDialog = true
+      _getGoodsInfo(id).then(res => {
+        console.log(res)
+        this.queryGoodsInfo = res.data
+      })
+    },
+    modifyGoods () {
+      this.$refs.queryGoodsInfoRef.validate(valid => {
+        if (!valid) return
+        _modifyGoods(this.queryGoodsInfo.goods_id, {
+          goods_name: this.queryGoodsInfo.goods_name,
+          goods_price: this.queryGoodsInfo.goods_price,
+          goods_number: this.queryGoodsInfo.goods_number,
+          goods_weight: this.queryGoodsInfo.goods_weight
+        }).then(res => {
+          if (res.meta.status !== 200) return this.$message.error(res.meta.msg + '：此处接口文档有bug')
+          this.$message.success('修改成功')
+          this.getGoodsList()
+        })
+      })
     },
 
     //根据id删除商品

@@ -8,6 +8,22 @@ export function _getGoods (params) {
   })
 }
 
+//根据id查询商品信息
+export function _getGoodsInfo (id) {
+  return request({
+    url: `goods/` + id
+  })
+}
+
+//编辑商品信息
+export function _modifyGoods (id, data) {
+  return request({
+    method: 'put',
+    url: `goods/` + id,
+    data
+  })
+}
+
 //根据id删除商品
 export function _delGoods (id) {
   return request({
@@ -19,8 +35,8 @@ export function _delGoods (id) {
 //添加商品
 export function _addGoods (data) {
   return request({
-    method:'post',
-    url:'goods',
+    method: 'post',
+    url: 'goods',
     data
   })
 }

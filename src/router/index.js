@@ -1,3 +1,4 @@
+import index from '@/store/index'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
@@ -50,7 +51,7 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const tokenStr = window.sessionStorage.getItem('token')
+  const tokenStr = index.state.token
   if (to.path === '/login') return next()
   if (!tokenStr) return next('/login')
   next()

@@ -1,6 +1,6 @@
 import { request } from '@/network/request'
 
-export function login (loginForm) {
+export function _login (loginForm) {
   return request({
     method: 'post',
     url: 'login',

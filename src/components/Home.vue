@@ -63,15 +63,14 @@ export default {
   methods: {
     //退出登录
     logout () {
-      window.sessionStorage.clear()
-      this.$router.push('/login')
-      return this.$message.success('已退出登录')
+      this.$store.dispatch('LogOut').then(() => {
+        this.$router.push('/login')
+      })
     },
     //获取左侧菜单
     getMenuList () {
       menuList().then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-        this.$message.success('获取左侧菜单列表成功')
         this.menuList = res.data
       })
     },

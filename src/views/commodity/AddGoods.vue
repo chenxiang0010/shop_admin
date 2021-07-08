@@ -108,7 +108,7 @@ export default {
         goods_name: '',
         goods_cat: [],
         goods_price: 0,
-        goods_number: 0,
+        goods_number: 1,
         goods_weight: 0,
         goods_introduce: '',
         pics: [],

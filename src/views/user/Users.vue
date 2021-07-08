@@ -64,16 +64,16 @@
       @close='addUserDialogClose'>
       <el-form label-width='70px' :model='addForm' :rules='addFormRules' ref='addFormRef'>
         <el-form-item label='用户名' prop='username'>
-          <el-input v-model='addForm.username' prefix-icon='el-icon-phone'></el-input>
+          <el-input v-model='addForm.username' prefix-icon='el-icon-user-solid'></el-input>
         </el-form-item>
         <el-form-item label='密码' prop='password'>
-          <el-input v-model='addForm.password' prefix-icon='el-icon-s-goods'></el-input>
-        </el-form-item>
-        <el-form-item label='邮箱' prop='email'>
-          <el-input v-model='addForm.email' prefix-icon='el-icon-s-goods'></el-input>
+          <el-input v-model='addForm.password' prefix-icon='el-icon-lock'></el-input>
         </el-form-item>
         <el-form-item label='手机号' prop='mobile'>
-          <el-input v-model='addForm.mobile' prefix-icon='el-icon-s-goods'></el-input>
+          <el-input v-model='addForm.mobile' prefix-icon='el-icon-phone'></el-input>
+        </el-form-item>
+        <el-form-item label='邮箱' prop='email'>
+          <el-input v-model='addForm.email' prefix-icon='el-icon-folder'></el-input>
         </el-form-item>
       </el-form>
       <span slot='footer' class='dialog-footer'>
@@ -88,13 +88,13 @@
                @close='modifyUserDialogClose'>
       <el-form label-width='70px' :model='queryUserInfo' :rules='addFormRules' ref='queryUserInfoRef'>
         <el-form-item label='用户名' prop='username'>
-          <el-input v-model='queryUserInfo.username' prefix-icon='el-icon-phone' disabled></el-input>
+          <el-input v-model='queryUserInfo.username' disabled prefix-icon='el-icon-user-solid'></el-input>
         </el-form-item>
         <el-form-item label='邮箱' prop='email'>
-          <el-input v-model='queryUserInfo.email' prefix-icon='el-icon-s-goods'></el-input>
+          <el-input v-model='queryUserInfo.email' prefix-icon='el-icon-folder'></el-input>
         </el-form-item>
         <el-form-item label='手机号' prop='mobile'>
-          <el-input v-model='queryUserInfo.mobile' prefix-icon='el-icon-s-goods'></el-input>
+          <el-input v-model='queryUserInfo.mobile' prefix-icon='el-icon-phone'></el-input>
         </el-form-item>
       </el-form>
       <span slot='footer' class='dialog-footer'>
@@ -133,14 +133,14 @@
 
 <script>
 import {
-  _userList,
-  _getUserInfo,
-  _modifyUserInfo,
-  _modifyUserState,
   _addUser,
   _delUser,
+  _getUserInfo,
   _getUserRole,
-  _setUserRole
+  _modifyUserInfo,
+  _modifyUserState,
+  _setUserRole,
+  _userList
 } from '@/network/user'
 
 export default {

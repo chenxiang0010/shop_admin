@@ -1,3 +1,4 @@
+import index from '@/store/index'
 import axios from 'axios'
 import NProgress from 'nprogress'
 
@@ -10,7 +11,7 @@ export function request (config) {
   //请求拦截器
   instance.interceptors.request.use(success => {
     NProgress.start()
-    success.headers.Authorization = window.sessionStorage.getItem('token')
+    success.headers.Authorization = index.state.token
     return success
   })
 

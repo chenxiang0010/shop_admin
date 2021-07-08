@@ -6,7 +6,7 @@
       </div>
       <el-form ref='loginRef' :rules='loginRules' :model='loginForm' label-width='70px' class='login_form'>
         <el-form-item label='用户名' prop='username'>
-          <el-input v-model='loginForm.username' prefix-icon='el-icon-phone'></el-input>
+          <el-input v-model='loginForm.username' prefix-icon='el-icon-user-solid'></el-input>
         </el-form-item>
         <el-form-item label='密码' prop='password'>
           <el-input v-model='loginForm.password' prefix-icon='el-icon-s-goods' type='password'></el-input>
@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import { login } from '@/network/login'
 
 export default {
   name: 'Login',
@@ -45,17 +44,19 @@ export default {
       }
     }
   },
+  created () {
+
+  },
+
   methods: {
     // 登录按钮
     login () {
       this.$refs.loginRef.validate(valid => {
         if (!valid) return
-        login(this.loginForm).then(res => {
-          console.log(res)
-          if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
-          this.$message.success('登录成功')
-          window.sessionStorage.setItem('token', res.data.token)
+        this.$store.dispatch('Login', this.loginForm).then(() => {
           this.$router.push('/home')
+        }).catch(err => {
+          this.$message.error('err')
         })
       })
     },
