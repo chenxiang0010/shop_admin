@@ -5,7 +5,7 @@ import NProgress from 'nprogress'
 export function request (config) {
   //创建实例
   const instance = axios.create({
-    baseURL: 'http://test.qhhz.xyz:8888/api/private/v1/'
+    baseURL: 'https://test.qhhz.xyz:8888/api/private/v1/'
   })
 
   //请求拦截器
