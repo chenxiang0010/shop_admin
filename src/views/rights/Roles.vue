@@ -116,11 +116,11 @@ import {
   _delRole,
   _getUserRight,
   _setUserRight, _delRight
-} from '@/network/roles'
+} from '../../network/roles'
 
 export default {
   name: 'Roles',
-  data () {
+  data() {
     return {
       roles: [],
       rightsList: [],
@@ -146,19 +146,19 @@ export default {
       queryRolesInfo: {}
     }
   },
-  created () {
+  created() {
     this.getRolesList()
   },
   methods: {
     //获取角色列表
-    getRolesList () {
+    getRolesList() {
       _getRoleList().then(res => {
         this.roles = res.data
       })
     },
 
     //添加角色
-    addRoles () {
+    addRoles() {
       this.$refs.addRolesRef.validate(valid => {
         if (!valid) return
         _addRole(this.addRolesForm).then(res => {
@@ -169,19 +169,19 @@ export default {
         })
       })
     },
-    addRolesDialogClose () {
+    addRolesDialogClose() {
       this.$refs.addRolesRef.resetFields()
     },
 
     //修改角色信息
-    async modifyRolesDialog (id) {
+    async modifyRolesDialog(id) {
       this.modifyRolesDialogVisible = true
       _getRoleInfo(id).then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.queryRolesInfo = res.data
       })
     },
-    modifyRoles () {
+    modifyRoles() {
       this.$refs.queryRolesInfoRef.validate(valid => {
         if (!valid) return
         _modifyRoleInfo(this.queryRolesInfo.roleId, {
@@ -195,12 +195,12 @@ export default {
         })
       })
     },
-    modifyRolesDialogClose () {
+    modifyRolesDialogClose() {
       this.$refs.queryRolesInfoRef.resetFields()
     },
 
     //根据id删除角色
-    deleteRoles (id) {
+    deleteRoles(id) {
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -225,7 +225,7 @@ export default {
     },
 
     //分配权限
-    setRightsDialog (role) {
+    setRightsDialog(role) {
       this.roleId = role.id
       _getUserRight(role).then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
@@ -234,18 +234,18 @@ export default {
         this.setRightsDialogVisible = true
       })
     },
-    getDefKeys (node, arr) {
+    getDefKeys(node, arr) {
       if (!node.children) {
         return arr.push(node.id)
       }
       //递归调用，不懂
       node.children.forEach(item => this.getDefKeys(item, arr))
     },
-    rightsClosed () {
+    rightsClosed() {
       //重置数组
       this.defKeys = []
     },
-    setRights () {
+    setRights() {
       const keys = [
         ...this.$refs.treeRef.getCheckedKeys(),
         ...this.$refs.treeRef.getHalfCheckedKeys()
@@ -260,7 +260,7 @@ export default {
     },
 
     //删除权限
-    async deleteRights (role, rightId) {
+    async deleteRights(role, rightId) {
 
       this.$confirm('此操作将永久删除该权限, 是否继续?', '提示', {
         confirmButtonText: '确定',

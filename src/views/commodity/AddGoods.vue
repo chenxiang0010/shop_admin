@@ -1,3 +1,4 @@
+../..
 <template>
   <div>
     <!--面包屑导航-->
@@ -94,14 +95,14 @@
 </template>
 
 <script>
-import { _getCategoryList } from '@/network/categories'
-import { _addGoods } from '@/network/goods'
-import { _getParams } from '@/network/params'
+import { _getCategoryList } from '../../network/categories'
+import { _addGoods } from '../../network/goods'
+import { _getParams } from '../../network/params'
 import _ from 'lodash'
 
 export default {
   name: 'AddGoods',
-  data () {
+  data() {
     return {
       activeIndex: '0',
       addForm: {
@@ -124,41 +125,41 @@ export default {
       },
       manyTable: [],
       onlyTable: [],
-      upLoadUrl: 'http://test.qhhz.xyz:8888/api/private/v1/upload',
+      upLoadUrl: 'https://test.qhhz.xyz:8888/api/private/v1/upload',
       sToken: { Authorization: window.sessionStorage.getItem('token') },
       dialogVisible: false,
       previewPath: ''
     }
   },
-  created () {
+  created() {
     this.getCategoryList()
   },
   computed: {
-    cateId () {
+    cateId() {
       if (this.addForm.goods_cat.length === 3) return this.addForm.goods_cat[2]
       return null
     }
   },
   methods: {
-    getCategoryList () {
+    getCategoryList() {
       _getCategoryList().then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.categoryList = res.data
       })
     },
-    handleChange () {
+    handleChange() {
       if (this.addForm.goods_cat.length !== 3) {
         this.$message.warning('只能设置三级分类！')
         this.addForm.goods_cat = []
       }
     },
-    bfHandle (activeName, oldActiveName) {
+    bfHandle(activeName, oldActiveName) {
       if (oldActiveName === '0' && this.addForm.goods_cat.length !== 3) {
         this.$message.warning('参数未填写完整')
         return false
       }
     },
-    tabClick () {
+    tabClick() {
       if (this.activeIndex === '1') {
         //console.log(this.addForm.goods_cat[2] === this.cateId)
         _getParams(this.cateId, { sel: 'many' }).then(res => {
@@ -176,23 +177,25 @@ export default {
         })
       }
     },
-    handlePreview (file) {
+    handlePreview(file) {
       this.dialogVisible = true
       this.previewPath = file.response.data.url
     },
-    handleClose () {this.dialogVisible = false},
-    handleRemove (file) {
+    handleClose() {
+      this.dialogVisible = false
+    },
+    handleRemove(file) {
       const filePath = file.response.data.tmp_path
       const i = this.addForm.pics.find(x => {
         x.pic = filePath
       })
       this.addForm.pics.splice(i, 1)
     },
-    handleSuccess (res) {
+    handleSuccess(res) {
       const picInfo = { pic: res.data.tmp_path }
       this.addForm.pics.push(picInfo)
     },
-    addGoods () {
+    addGoods() {
       this.$refs.addFormRef.validate(valid => {
         if (!valid) return thid.$message.error('请填写必要的表单项')
         const form = _.cloneDeep(this.addForm)

@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { _getRightsList } from '@/network/rights'
+import { _getRightsList } from '../../network/rights'
 
 export default {
   name: 'Rights',

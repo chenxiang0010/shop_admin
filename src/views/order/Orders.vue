@@ -88,12 +88,12 @@
 </template>
 
 <script>
-import { _getOrderList, _getProgress } from '@/network/order'
-import cityData from '@/views/order/cityData'
+import { _getOrderList, _getProgress } from '../../network/order'
+import cityData from './cityData'
 
 export default {
   name: 'Orders',
-  data () {
+  data() {
     return {
       queryInfo: {
         query: '',
@@ -114,28 +114,28 @@ export default {
       cityData
     }
   },
-  created () {
+  created() {
     this.getOrderList()
   },
   methods: {
-    getOrderList () {
+    getOrderList() {
       _getOrderList(this.queryInfo).then(res => {
         this.total = res.data.total
         this.orders = res.data.goods
       })
     },
-    handleSizeChange (newSize) {
+    handleSizeChange(newSize) {
       this.queryInfo.pagesize = newSize
       this.getOrderList()
     },
-    handleCurrentChange (newPage) {
+    handleCurrentChange(newPage) {
       this.queryInfo.pagenum = newPage
       this.getOrderList()
     },
-    modifyOrderDialog (id) {
+    modifyOrderDialog() {
       this.dialogVisible = true
     },
-    showBox () {
+    showBox() {
       this.progressDialogVisible = true
       _getProgress().then(res => {
         console.log(res)

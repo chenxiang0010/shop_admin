@@ -2,7 +2,7 @@
   <div class='login_container'>
     <div class='login_box'>
       <div class='avatar_box'>
-        <img src='@/assets/logo.png' alt='登录区域头像'>
+        <img src='../assets/logo.png' alt='登录区域头像'>
       </div>
       <el-form ref='loginRef' :rules='loginRules' :model='loginForm' label-width='70px' class='login_form'>
         <el-form-item label='用户名' prop='username'>

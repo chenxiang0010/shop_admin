@@ -10,6 +10,7 @@ import './plugins/element.js'
 import router from './router'
 import store from './store'
 
+
 Vue.config.productionTip = false
 Vue.component('tree-table', TreeTable)
 Vue.prototype.$moment = moment

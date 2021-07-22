@@ -1,4 +1,4 @@
-import { request } from '@/network/request'
+import {request} from './request'
 
 //获取分类列表
 export function _getCategoryList (params) {

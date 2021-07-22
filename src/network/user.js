@@ -1,7 +1,7 @@
-import { request } from '@/network/request'
+import { request } from './request'
 
 //获取用户列表
-export function _userList (params) {
+export function _getUserList (params) {
   return request({
     url: 'users',
     params

@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { _getReport } from '@/network/report'
+import { _getReport } from '../../network/report'
 import * as echarts from 'echarts'
 import _ from 'lodash'
 

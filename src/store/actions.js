@@ -1,4 +1,4 @@
-import { _login } from '@/network/login'
+import { _login } from '../network/login'
 
 export default {
   Login ({ commit }, params) {

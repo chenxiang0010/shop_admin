@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { menuList } from '@/network/home'
+import { menuList } from '../network/home'
 
 export default {
   name: 'Home',
@@ -114,7 +114,7 @@ export default {
   background-color: #545c72;
 
   .toggle_button {
-    background-color: #4a5064;
+    background-color: #3f4452;
     font-size: 10px;
     color: white;
     text-align: center;

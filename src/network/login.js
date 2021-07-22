@@ -1,4 +1,4 @@
-import { request } from '@/network/request'
+import {request} from './request'
 
 export function _login (loginForm) {
   return request({

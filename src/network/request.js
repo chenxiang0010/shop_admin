@@ -1,8 +1,8 @@
-import index from '@/store/index'
+import index from '../store/index'
 import axios from 'axios'
 import NProgress from 'nprogress'
 
-export function request (config) {
+export function request(config) {
   //创建实例
   const instance = axios.create({
     baseURL: 'https://test.qhhz.xyz:8888/api/private/v1/'

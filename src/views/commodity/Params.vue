@@ -142,8 +142,8 @@
 </template>
 
 <script>
-import { _getCategoryList } from '@/network/categories'
-import { _getParams, _addValue, _getValue, _modifyValue, _delParams } from '@/network/params'
+import { _getCategoryList } from '../../network/categories'
+import { _getParams, _addValue, _getValue, _modifyValue, _delParams } from '../../network/params'
 
 export default {
   name: 'Params',

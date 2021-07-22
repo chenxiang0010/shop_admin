@@ -1,4 +1,4 @@
-import { request } from '@/network/request'
+import { request } from './request'
 
 //获取商品列表
 export function _getGoods (params) {

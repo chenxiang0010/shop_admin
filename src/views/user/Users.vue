@@ -140,12 +140,12 @@ import {
   _modifyUserInfo,
   _modifyUserState,
   _setUserRole,
-  _userList
-} from '@/network/user'
+  _getUserList
+} from '../../network/user'
 
 export default {
   name: 'Users',
-  data () {
+  data() {
     // 自定义邮箱规则
     let checkEmail = (rule, value, callback) => {
       const regEmail = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/
@@ -217,29 +217,29 @@ export default {
       selectedId: ''
     }
   },
-  created () {
+  created() {
     this.getUserList()
   },
   methods: {
     //获取用户列表
-    getUserList () {
-      _userList(this.queryInfo).then(res => {
+    getUserList() {
+      _getUserList(this.queryInfo).then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.users = res.data.users
         this.total = res.data.total
       })
     },
-    handleSizeChange (newSize) {
+    handleSizeChange(newSize) {
       this.queryInfo.pagesize = newSize
       this.getUserList()
     },
-    handleCurrentChange (newPage) {
+    handleCurrentChange(newPage) {
       this.queryInfo.pagenum = newPage
       this.getUserList()
     },
 
     //修改用户状态
-    modifyUserState (userInfo) {
+    modifyUserState(userInfo) {
       _modifyUserState(userInfo).then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
         this.$message.success('更新用户状态成功')
@@ -247,7 +247,7 @@ export default {
     },
 
     //添加用户以及对话框重置
-    addUser () {
+    addUser() {
       this.$refs.addFormRef.validate(valid => {
         if (!valid) return
         _addUser(this.addForm).then(res => {
@@ -260,12 +260,12 @@ export default {
         })
       })
     },
-    addUserDialogClose () {
+    addUserDialogClose() {
       this.$refs.addFormRef.resetFields()
     },
 
     //修改用户信息、对话框信息获取以及对话框重置
-    modifyUserDialog (id) {
+    modifyUserDialog(id) {
       this.modifyUserDialogVisible = true
       _getUserInfo(id).then(res => {
         if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
@@ -273,7 +273,7 @@ export default {
         this.queryUserInfo = res.data
       })
     },
-    modifyUser () {
+    modifyUser() {
       this.$refs.queryUserInfoRef.validate(valid => {
         if (!valid) return
         _modifyUserInfo(this.queryUserInfo.id, {
@@ -289,12 +289,12 @@ export default {
         this.getUserList()
       })
     },
-    modifyUserDialogClose () {
+    modifyUserDialogClose() {
       this.$refs.queryUserInfoRef.resetFields()
     },
 
     //根据id删除用户
-    deleteUser (id) {
+    deleteUser(id) {
       this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -316,14 +316,14 @@ export default {
     },
 
     //分配角色
-    setRoleDialog (userInfo) {
+    setRoleDialog(userInfo) {
       this.userInfo = userInfo
       _getUserRole().then(res => {
         this.rolesList = res.data
         this.setRoleDialogVisible = true
       })
     },
-    setRole () {
+    setRole() {
       if (!this.selectedId) {
         return this.$message.error('请选择要分配的角色')
       }
@@ -334,7 +334,7 @@ export default {
         this.setRoleDialogVisible = false
       })
     },
-    setRoleClose () {
+    setRoleClose() {
       this.selectedId = ''
       this.userInfo = {}
     }

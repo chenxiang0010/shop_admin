@@ -30,7 +30,7 @@
             {{ $moment(scope.row.add_time, 'X').format('YYYY-MM-DD HH:mm:ss') }}
           </template>
         </el-table-column>
-        <el-table-column label='操作' width='180px'>
+        <el-table-column label='操作' width='190px'>
           <template slot-scope='scope'>
             <el-button icon='el-icon-edit' size='mini' type='primary' @click='modifyGoodsDialog(scope.row.goods_id)'>
               编辑
@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { _delGoods, _getGoods, _getGoodsInfo, _modifyGoods } from '@/network/goods'
+import { _delGoods, _getGoods, _getGoodsInfo, _modifyGoods } from '../../network/goods'
 
 export default {
   name: 'Goods',

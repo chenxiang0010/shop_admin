@@ -1,4 +1,4 @@
-import { request } from '@/network/request'
+import { request } from './request'
 
 //获取参数
 export function _getParams (id, params) {

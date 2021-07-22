@@ -94,7 +94,7 @@ import {
   _getCateInfo,
   _getModifyCateInfo,
   _modifyCate
-} from '@/network/categories'
+} from '../../network/categories'
 
 export default {
   name: 'Categories',
